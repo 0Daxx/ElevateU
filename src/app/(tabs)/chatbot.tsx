@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,10 +10,14 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { colors, spacing, borderRadius } from "@/theme/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EnrichedMarkdownText } from "react-native-enriched-markdown";
+import { Modal } from "react-native";
+import { Theme } from "../../../.expo/types/router";
 
 interface ChatMessage {
   id: string;
@@ -45,151 +49,81 @@ const SUGGESTED_PROMPTS = [
   "Improve my resume",
   "Interview questions",
 ];
-
-export default function ChatbotScreen() {
-  const systemColorScheme = useColorScheme();
-  const theme = systemColorScheme === "light" ? colors.light : colors.dark;
-
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
-  const [inputText, setInputText] = useState("");
-  const [clickedPrompt, setClickedPrompt] = useState<boolean | null>(null);
-
-  const handleSendMessage = async (textToSend?: string) => {
-    const text = textToSend || inputText;
-    if (!text.trim()) return;
-
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "You",
-      text: text.trim(),
-    };
-
-    // 1. Instantly append user message & clear input
-    setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInputText("");
-
-    try {
-      // 2. Use machine IP or 10.0.2.2 (Android emulator) instead of 127.0.0.1
-      // Most local servers (LM Studio/Ollama) use standard OpenAI format: /v1/chat/completions
-      const response = await fetch(
-        "http://192.168.0.105:1234/v1/chat/completions",
-        {
-          // const response = await fetch("exp://192.168.0.105:8081/v1/chat/completions", {
-          // const response = await fetch("http://192.168.1.50:1234/v1/chat/completions", {
-          // const response = await fetch("http://192.168.1.50:1234/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+// Configuration for local or cloud AI models
+const AI_ENDPOINT = "http://192.168.0.105:1234/v1/chat/completions";
+  
+// Component
+const ChatMessageItem = React.memo(
+  ({ item, theme }: { item: ChatMessage; theme: Theme }) => {
+    const isUser = item.sender === "You";
+    return (
+      <View
+        style={[
+          styles.messageBubble,
+          isUser ? styles.userBubbleAlign : styles.aiBubbleAlign,
+          {
+            backgroundColor: isUser ? "#132A2F" : theme.cardBackground,
+            borderColor: theme.cardBorder,
           },
-          body: JSON.stringify({
-            messages: [{ role: "user", content: text.trim() , context: messages.map((msg) => ({ role: msg.sender === "You" ? "user" : "assistant", content: msg.text })) }],
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`);
-      }
-
-      // 3. Parse JSON from server
-      const data = await response.json();
-
-      // Extract text (adjust path depending on your local AI server payload shape)
-      const aiText =
-        data.choices?.[0]?.message?.content || "No response generated.";
-
-      // 4. Append actual AI response to messages state
-      const aiMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: "AI",
-        text: aiText,
-      };
-
-      setMessages((prev) => [...prev, aiMsg]);
-    } catch (error) {
-      console.error("AI Fetch Error:", error);
-
-      // Fallback UI error message
-      const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: "AI",
-        text: "Failed to reach AI server. Please check your local network connection.",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    }
-  };
-
-  return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
-    >
-      <StatusBar
-        barStyle={
-          systemColorScheme === "light" ? "dark-content" : "light-content"
-        }
-      />
-
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
-          Chatbot
-        </Text>
-        <Pressable
+        ]}
+      >
+        <Text
           style={[
-            styles.menuButton,
-            {
-              backgroundColor: theme.cardBackground,
-              borderColor: theme.cardBorder,
-            },
+            styles.senderLabel,
+            { color: isUser ? "#34D399" : theme.textPrimary },
           ]}
         >
-          <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>
-            •••
-          </Text>
-        </Pressable>
+          {item.sender}
+        </Text>
+        <Text style={[styles.messageText, { color: isUser ? "#E2E8F0" : theme.textSecondary }]}>
+          {item.text}
+        </Text>
+      </View>
+    );
+  }
+);
+
+// 2. Header & Suggested Prompts (Used in ListHeaderComponent for Inverted List)
+const HeaderSection = React.memo(
+  ({
+    theme,
+    showPrompts,
+    onSelectPrompt,
+  }: {
+    theme: Theme;
+    showPrompts: boolean;
+    onSelectPrompt: (prompt: string) => void;
+  }) => (
+    <View style={styles.headerSectionContainer}>
+      {/* Hero Header Card */}
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.cardBackground,
+            borderColor: theme.cardBorder,
+          },
+        ]}
+      >
+        <Text style={[styles.categoryLabel, { color: theme.textSecondary }]}>
+          AI ASSISTANT
+        </Text>
+        <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
+          Ask for career guidance, learning, or interview prep.
+        </Text>
+        <Text style={[styles.heroDescription, { color: theme.textSecondary }]}>
+          Chat UI should feel compact, readable, and quick to start.
+        </Text>
       </View>
 
-      {/* <KeyboardAvoidingView
-        style={styles.keyboardAvoid}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      > */}
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Hero Header Card */}
+      {/* Suggested Prompts Section */}
+      {showPrompts && (
         <View
           style={[
             styles.card,
             {
               backgroundColor: theme.cardBackground,
               borderColor: theme.cardBorder,
-            },
-          ]}
-        >
-          <Text style={[styles.categoryLabel, { color: theme.textSecondary }]}>
-            AI ASSISTANT
-          </Text>
-          <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
-            Ask for career guidance, learning, or interview prep.
-          </Text>
-          <Text
-            style={[styles.heroDescription, { color: theme.textSecondary }]}
-          >
-            Chat UI should feel compact, readable, and quick to start.
-          </Text>
-        </View>
-
-        {/* Suggested Prompts Section */}
-        <View
-        // Hide after pressing a prompt 
-          style={[
-            styles.card,
-            clickedPrompt && { display: "none" },
-            {
-              backgroundColor: theme.cardBackground,
-              borderColor: theme.cardBorder,
-              // visibility: clickedPrompt ? "hidden" : "visible",
             },
           ]}
         >
@@ -206,15 +140,11 @@ export default function ChatbotScreen() {
             </View>
           </View>
 
-          {/* Prompt Chips */}
           <View style={styles.promptsWrap}>
             {SUGGESTED_PROMPTS.map((prompt) => (
               <Pressable
                 key={prompt}
-                onPress={() => {
-                  handleSendMessage(prompt);
-                  setClickedPrompt(true);
-                }}
+                onPress={() => onSelectPrompt(prompt)}
                 style={[
                   styles.promptChip,
                   {
@@ -235,51 +165,210 @@ export default function ChatbotScreen() {
             ))}
           </View>
         </View>
+      )}
+    </View>
+  )
+);
 
-        {/* Chat Messages Timeline */}
-        <View style={styles.chatList}>
-          {messages.map((item) => {
-            const isUser = item.sender === "You";
-            return (
-              <View
-                key={item.id}
-                style={[
-                  styles.messageBubble,
-                  isUser ? styles.userBubbleAlign : styles.aiBubbleAlign,
-                  {
-                    backgroundColor: isUser ? "#132A2F" : theme.cardBackground,
-                    borderColor: theme.cardBorder,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.senderLabel,
-                    { color: isUser ? "#34D399" : theme.textPrimary },
-                  ]}
-                >
-                  {item.sender}
-                </Text>
-
-                {/* Ai text in markdown , might add later  */}
-                <Text
-                  style={[styles.messageText, { color: theme.textSecondary }]}
-                >
-                  {item.text}
-                </Text>
-                {/* <EnrichedMarkdownText markdown={item.text} /> */}
-              </View>
-            );
-          })}
+// 3. Clear Session Modal Component
+const OptionMenuModal = React.memo(
+  ({
+    visible,
+    onClose,
+    onClearSession,
+    theme,
+  }: {
+    visible: boolean;
+    onClose: () => void;
+    onClearSession: () => void;
+    theme: Theme;
+  }) => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <View
+          style={[
+            styles.modalContent,
+            { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder },
+          ]}
+        >
+          <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
+            Options
+          </Text>
+          <Pressable
+            style={styles.clearButton}
+            onPress={() => {
+              onClearSession();
+              onClose();
+            }}
+          >
+            <Text style={styles.clearButtonText}>Clear Chat Session</Text>
+          </Pressable>
+          <Pressable style={styles.cancelButton} onPress={onClose}>
+            <Text style={{ color: theme.textSecondary }}>Cancel</Text>
+          </Pressable>
         </View>
-      </ScrollView>
+      </Pressable>
+    </Modal>
+  )
+);
+
+// --- Main Screen ---
+export default function ChatbotScreen() {
+  const systemColorScheme = useColorScheme();
+  const theme = systemColorScheme === "light" ? colors.light : colors.dark;
+
+  // Inverted list requires newest messages at index 0
+  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const [inputText, setInputText] = useState("");
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendMessage = async (textToSend?: string) => {
+    const text = textToSend || inputText;
+    if (!text.trim() || isLoading) return;
+
+    // Hide prompts section on first interaction
+    if (!hasInteracted) setHasInteracted(true);
+
+    const userMsgId = Date.now().toString();
+    const userMsg: ChatMessage = {
+      id: userMsgId,
+      sender: "You",
+      text: text.trim(),
+    };
+
+    const placeholderId = `ai-temp-${Date.now()}`;
+    const placeholderMsg: ChatMessage = {
+      id: placeholderId,
+      sender: "AI",
+      text: "Thinking...",
+    };
+
+    // Prepend new messages for INVERTED FlatList (Index 0 is bottom of screen)
+    setMessages((prev) => [placeholderMsg, userMsg, ...prev]);
+    if (!textToSend) setInputText("");
+    setIsLoading(true);
+
+    try {
+      // Build full conversation history (ordered chronologically old -> new)
+      const chatHistory = [...messages]
+        .reverse()
+        .filter((msg) => !msg.id.startsWith("ai-temp-"))
+        .map((msg) => ({
+          role: msg.sender === "You" ? "user" : "assistant",
+          content: msg.text,
+        }));
+
+      // Add current message
+      chatHistory.push({ role: "user", content: text.trim() });
+
+      const response = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: chatHistory, // Full conversational context payload
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const aiText =
+        data.choices?.[0]?.message?.content || "No response generated.";
+
+      // Replace "Thinking..." placeholder with AI response
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? { id: (Date.now() + 1).toString(), sender: "AI", text: aiText }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("AI Fetch Error:", error);
+      // Replace "Thinking..." placeholder with error text
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === placeholderId
+            ? {
+                id: (Date.now() + 1).toString(),
+                sender: "AI",
+                text: "Failed to connect to AI server. Please check your network.",
+              }
+            : msg
+        )
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearSession = () => {
+    setMessages([]);
+    setHasInteracted(false);
+  };
+
+  return (
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <StatusBar
+        barStyle={
+          systemColorScheme === "light" ? "dark-content" : "light-content"
+        }
+      />
+
+      {/* Top Header Bar */}
+      <View style={styles.headerRow}>
+        <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
+          Chatbot
+        </Text>
+        <Pressable
+          onPress={() => setIsModalVisible(true)}
+          style={[
+            styles.menuButton,
+            {
+              backgroundColor: theme.cardBackground,
+              borderColor: theme.cardBorder,
+            },
+          ]}
+        >
+          <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>
+            •••
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Chat Messages Timeline (Inverted FlatList) */}
+      <FlatList
+        inverted={true}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+        renderItem={({ item }: { item: ChatMessage }) => (
+          <ChatMessageItem item={item} theme={theme} />
+        )}
+        // In inverted mode, ListFooterComponent displays at the TOP of the screen
+        ListFooterComponent={
+          <HeaderSection
+            theme={theme}
+            showPrompts={!hasInteracted}
+            onSelectPrompt={(prompt) => handleSendMessage(prompt)}
+          />
+        }
+      />
 
       {/* Floating Bottom Input Bar */}
-
       <KeyboardAvoidingView
-        style={styles.keyboardAvoid}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        behavior="position"
       >
         <View style={styles.inputWrapper}>
           <View
@@ -298,29 +387,88 @@ export default function ChatbotScreen() {
               value={inputText}
               onChangeText={setInputText}
               onSubmitEditing={() => handleSendMessage()}
+              editable={!isLoading}
             />
             <Pressable
               onPress={() => handleSendMessage()}
-              style={[styles.sendButton, { backgroundColor: theme.primary }]}
+              disabled={isLoading || !inputText.trim()}
+              style={[
+                styles.sendButton,
+                {
+                  backgroundColor:
+                    isLoading || !inputText.trim()
+                      ? theme.textMuted
+                      : theme.primary,
+                },
+              ]}
             >
-              <Text
-                style={[
-                  styles.sendButtonText,
-                  { color: theme.primaryButtonText },
-                ]}
-              >
-                Send
-              </Text>
+              {isLoading ? (
+                <ActivityIndicator  size="small" color="#FFF" />
+              ) : (
+                <Text
+                  style={[
+                    styles.sendButtonText,
+                    { color: theme.primaryButtonText },
+                  ]}
+                >
+                  Send
+                </Text>
+              )}
             </Pressable>
           </View>
         </View>
       </KeyboardAvoidingView>
-      {/* </KeyboardAvoidingView> */}
+
+      {/* Modal Options */}
+      <OptionMenuModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onClearSession={handleClearSession}
+        theme={theme}
+      />
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
+  clearButton: {
+    backgroundColor: "#EF4444",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  clearButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
+  cancelButton: {
+    paddingVertical: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingTop: spacing.xxl + 60 ,
+    paddingBottom: 10,
+  },
   safeArea: {
     flex: 1,
   },
