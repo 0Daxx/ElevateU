@@ -1,3 +1,13 @@
+# App Design ( currently )
+
+<img src="appDesign/screen1.jpeg" height="200"  >
+<img src="appDesign/screen2.jpeg" height="200"  >
+<img src="appDesign/screen3.jpeg" height="200"  >
+<img src="appDesign/screen4.jpeg" height="200"  >
+<img src="appDesign/screen5.jpeg" height="200"  >
+
+
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
