@@ -4,7 +4,8 @@ import { Ionicons } from "@react-native-vector-icons/ionicons";
 export default function RootLayout() {
   const isLoggedIn = false;
   return (
-    <Tabs  >
+    <Tabs screenOptions={{ headerShown: false }}>
+    {/* <Tabs options={{ headerShown: false }} > */}
       <Tabs.Screen
         name="index"
         options={{
@@ -23,7 +24,6 @@ export default function RootLayout() {
       />
       <Tabs.Screen
         name="(roadmap)"
-        
         options={{
           tabBarIcon: () => <Ionicons name="list" size={24} 
           color="black" />,
