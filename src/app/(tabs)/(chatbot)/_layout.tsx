@@ -2,10 +2,7 @@ import { Drawer } from "expo-router/drawer";
 import { useState } from "react";
 import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-// Import icons (Ionicons comes pre-installed with Expo)
-// import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcon } from "expo-router/build/native-tabs"; 
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { ChatMessage } from "./chatbot"; // Adjust path as needed
 
