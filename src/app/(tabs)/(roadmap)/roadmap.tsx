@@ -20,7 +20,7 @@ export default function RoadmapScreen() {
   const router = useRouter();
   const systemColorScheme = useColorScheme();
   const theme = systemColorScheme === "light" ? colors.light : colors.dark;
-  
+
   const { topics, projects } = useRoadmapStore();
   const [activeTab, setActiveTab] = useState<TabType>("roadmap");
 
@@ -33,10 +33,10 @@ export default function RoadmapScreen() {
           systemColorScheme === "light" ? "dark-content" : "light-content"
         }
       />
-      
+
       {/* Tab Header */}
       <View style={[styles.tabContainer, { backgroundColor: theme.background }]}>
-        <TouchableOpacity
+        <Pressable
           activeOpacity={0.8}
           onPress={() => setActiveTab("roadmap")}
           style={[
@@ -57,9 +57,9 @@ export default function RoadmapScreen() {
           >
             Roadmap
           </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
+        </Pressable>
+
+        <Pressable
           activeOpacity={0.8}
           onPress={() => setActiveTab("projects")}
           style={[
@@ -80,7 +80,7 @@ export default function RoadmapScreen() {
           >
             Projects
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -125,7 +125,7 @@ export default function RoadmapScreen() {
                 <Text style={[styles.topicTitle, { color: theme.textPrimary }]}>
                   {topic.title}
                 </Text>
-                
+
                 {/* Subtopics */}
                 {topic.subtopics.map((subtopic) => (
                   <Pressable
@@ -146,7 +146,7 @@ export default function RoadmapScreen() {
                         style={[
                           styles.statusIndicator,
                           {
-                            backgroundColor: 
+                            backgroundColor:
                               subtopic.status === "Done" ? theme.successBadgeBg :
                               subtopic.status === "Skip" ? theme.warningBadgeBg :
                               theme.primary,
@@ -162,12 +162,12 @@ export default function RoadmapScreen() {
                         </Text>
                       </View>
                     </View>
-                    
+
                     <View
                       style={[
                         styles.statusBadge,
                         {
-                          backgroundColor: 
+                          backgroundColor:
                             subtopic.status === "Done" ? theme.successBadgeBg :
                             subtopic.status === "Skip" ? theme.warningBadgeBg :
                             theme.badgeBackground,
@@ -178,7 +178,7 @@ export default function RoadmapScreen() {
                         style={[
                           styles.statusText,
                           {
-                            color: 
+                            color:
                               subtopic.status === "Done" ? theme.successBadgeText :
                               subtopic.status === "Skip" ? theme.warningBadgeText :
                               theme.textSecondary,
@@ -240,7 +240,7 @@ export default function RoadmapScreen() {
                     style={[
                       styles.difficultyBadge,
                       {
-                        backgroundColor: 
+                        backgroundColor:
                           project.difficulty === "Beginner" ? theme.successBadgeBg :
                           project.difficulty === "Intermediate" ? theme.warningBadgeBg :
                           theme.badgeBackground,
@@ -251,7 +251,7 @@ export default function RoadmapScreen() {
                       style={[
                         styles.difficultyBadgeText,
                         {
-                          color: 
+                          color:
                             project.difficulty === "Beginner" ? theme.successBadgeText :
                             project.difficulty === "Intermediate" ? theme.warningBadgeText :
                             theme.textSecondary,
@@ -262,16 +262,16 @@ export default function RoadmapScreen() {
                     </Text>
                   </View>
                 </View>
-                
+
                 <Text style={[styles.projectDescription, { color: theme.textSecondary }]}>
                   {project.description}
                 </Text>
-                
+
                 <View style={styles.tasksPreview}>
                   <Text style={[styles.tasksLabel, { color: theme.textMuted }]}>
                     {project.tasks.filter(t => t.isCompleted).length} / {project.tasks.length} tasks completed
                   </Text>
-                  
+
                   {/* Mini progress bar */}
                   <View style={[styles.progressTrack, { backgroundColor: theme.badgeBackground }]}>
                     <View
