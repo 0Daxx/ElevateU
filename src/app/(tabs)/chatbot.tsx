@@ -51,7 +51,7 @@ const SUGGESTED_PROMPTS = [
 ];
 // Configuration for local or cloud AI models
 const AI_ENDPOINT = "http://192.168.0.105:1234/v1/chat/completions";
-  
+// const AI_ENDPOINT= "http://192.168.0.105:1234/v1/chat/completions";
 // Component
 const ChatMessageItem = React.memo(
   ({ item, theme }: { item: ChatMessage; theme: Theme }) => {
@@ -318,7 +318,7 @@ export default function ChatbotScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: theme.background }]}
+      style={[styles.safeArea, { backgroundColor: theme.background , display: "flex" , justifyContent: "space-between" , flexDirection: "column" , alignItems: "stretch" }   ]}
     >
       <StatusBar
         barStyle={
