@@ -48,7 +48,7 @@ export default function ProfileScreen() {
             <View style={styles.userInfoCol}>
               <Text style={[styles.userName, { color: theme.textPrimary }]}>Rahul Kumar</Text>
               <Text style={[styles.userDegree, { color: theme.textSecondary }]}>
-                B.Tech CSE • 2024–2028
+                B.Tech CSE • 2022–2026
               </Text>
 
               {/* Quick skill tags */}
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
 
             <View style={styles.listItem}>
               <Text style={[styles.itemText, { color: theme.textPrimary }]}>College name</Text>
-              <Text style={[styles.itemValue, { color: theme.textMuted }]}>placeholder</Text>
+              <Text style={[styles.itemValue, { color: theme.textMuted }]}> IIT Delhi </Text>
             </View>
           </View>
         </View>
