@@ -123,6 +123,7 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
               key={item.id}
               onPress={() => {
                 router.push(`/(tabs)/(roadmap)/${item.id}`);
+                console.log(`Navigating to roadmap: ${item.id}`);
               }}
               style={[
                 styles.gridCard,
@@ -146,7 +147,7 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
                 {item.description}
               </Text>
 
-              <View style={styles.cardFooter}>
+              <View style={styles.cardFooter} > 
                 <Text style={[styles.stepsText, { color: theme.textMuted }]}>
                   {item.stepsCount} steps
                 </Text>

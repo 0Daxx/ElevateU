@@ -103,6 +103,10 @@ export default function Path({ navigation, route }: PathProps) {
   const progressPercent = (completedSteps / totalSteps) * 100;
 
   const handleBack = () => {
+    console.log("Back button pressed");
+    console.log("Navigation object:", navigation);
+    console.log("Route object:", route);
+    console.log("Route params:", route?.params);
     if (navigation) {
       navigation.goBack();
     }

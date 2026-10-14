@@ -8,7 +8,7 @@ export default function Layout() {
     }} />
     <Stack.Screen name="[path]" options={{
       title: "Path",
-      headerShown: true,
+      // headerShown: true,
     }} />
   </Stack>;
 }
