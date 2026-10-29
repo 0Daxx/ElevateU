@@ -14,12 +14,11 @@ import {
   ActivityIndicator,
   Modal,
   Vibration,
-  // Clipboard,
+  Clipboard,
   Alert,
 } from "react-native";
-// import {useClipboard} from '@react-native-clipboard/clipboard';
+
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EnrichedMarkdownText } from "react-native-enriched-markdown";
 import { colors, spacing, borderRadius } from "@/theme/theme";
 
 // --- Types ---
@@ -50,8 +49,30 @@ type Theme = {
   divider: string;
 };
 
-// --- Configuration ---
-const AI_ENDPOINT = "http://192.168.0.107:1234/v1/chat/completions";
+// --- Configuration & Fallback Logic ---
+const getApiConfigs = () => {
+  const groqKeys = (process.env.EXPO_PUBLIC_GROQ_KEYS || "").split(",").filter(Boolean);
+  const cerebrasKeys = (process.env.EXPO_PUBLIC_CEREBRAS_KEYS || "").split(",").filter(Boolean);
+
+  return [
+    // Tier 1: Groq (Fastest)
+    { 
+      provider: "Groq", 
+      baseUrl: "https://api.groq.com/openai/v1/chat/completions", 
+      keys: groqKeys, 
+      model: "openai/gpt-oss-120b" 
+      // model: "llama-3.3-70b-versatile" 
+    },
+    // Tier 2: Cerebras (High Speed Alternative)
+    { 
+      provider: "Cerebras", 
+      baseUrl: "https://api.cerebras.ai/v1/chat/completions", 
+      keys: cerebrasKeys, 
+      model: "openai/gpt-oss-120b" 
+      // model: "llama3.1-70b" 
+    },
+  ];
+};
 
 const SUGGESTED_PROMPTS = [
   "How to become an AI engineer?",
@@ -127,19 +148,10 @@ const ChatMessageItem = React.memo(
             </Text>
           </View>
 
-          {isUser ? (
-            <Text style={[styles.messageText, { color: "#E2E8F0" }]}>
-              {item.text}
-            </Text>
-          ) : (
-            // <EnrichedMarkdownText
-            <Text>
-              {item.text}
-            </Text>
-              // markdown={item.text}
-              // style={{ color: theme.textSecondary }}
-            // />
-          )}
+          {/* Plain Text Support - No Markdown */}
+          <Text style={[styles.messageText, { color: isUser ? "#E2E8F0" : theme.textSecondary }]}>
+            {item.text}
+          </Text>
 
           {!isUser && (
             <View style={styles.aiActions}>
@@ -249,7 +261,6 @@ const HeaderSection = React.memo(
 
 // --- Main Screen ---
 export default function ChatbotScreen() {
-  // const Clipboard = useClipboard();
   const systemColorScheme = useColorScheme();
   const theme = (systemColorScheme === "light" ? colors.light : colors.dark) as Theme;
 
@@ -259,7 +270,7 @@ export default function ChatbotScreen() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-
+  
   // Session Management Modals
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -285,7 +296,6 @@ export default function ChatbotScreen() {
   );
 
   const scrollToBottom = () => {
-    // In inverted FlatList, offset 0 is the bottom (newest messages)
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
@@ -294,7 +304,7 @@ export default function ChatbotScreen() {
     setShowScrollButton(offsetY > 50);
   };
 
-  // --- AI Generation Logic ---
+  // --- AI Generation Logic with Fallback ---
   const generateAIResponse = async (currentMessages: ChatMessage[], newUserText: string) => {
     setIsLoading(true);
     const placeholderId = `ai-temp-${Date.now()}`;
@@ -310,23 +320,50 @@ export default function ChatbotScreen() {
     scrollToBottom();
 
     abortControllerRef.current = new AbortController();
+    const configs = getApiConfigs();
 
     try {
-      const chatHistory = currentMessages.map((msg) => ({
-        role: msg.sender === "You" ? "user" : "assistant",
-        content: msg.text,
-      }));
+      let success = false;
+      let aiText = "";
 
-      const response = await fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: chatHistory }),
-        signal: abortControllerRef.current.signal,
-      });
+      // Fallback Loop: Try Groq, then Cerebras
+      for (const config of configs) {
+        if (success) break;
+        
+        for (const apiKey of config.keys) {
+          try {
+            console.log(`Attempting ${config.provider}...`);
+            const response = await fetch(config.baseUrl, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${apiKey.trim()}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: config.model,
+                messages: currentMessages.map((msg) => ({
+                  role: msg.sender === "You" ? "user" : "assistant",
+                  content: msg.text,
+                })),
+              }),
+              signal: abortControllerRef.current?.signal,
+            });
 
-      if (!response.ok) throw new Error(`Server status ${response.status}`);
-      const data = await response.json();
-      const aiText = data.choices?.[0]?.message?.content || "No response generated.";
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const data = await response.json();
+            aiText = data.choices?.[0]?.message?.content || "No response generated.";
+            success = true;
+            console.log(`✅ Success with ${config.provider}`);
+            break; // Break inner loop (keys)
+          } catch (error: any) {
+            if (error.name === "AbortError") throw error;
+            console.warn(`❌ Failed ${config.provider}:`, error.message);
+          }
+        }
+      }
+
+      if (!success) throw new Error("All providers failed");
 
       updateSessionMessages(activeSessionId, (prev) =>
         prev.map((m) =>
@@ -344,7 +381,7 @@ export default function ChatbotScreen() {
         updateSessionMessages(activeSessionId, (prev) =>
           prev.map((m) =>
             m.id === placeholderId
-              ? { ...m, id: `ai-${Date.now()}`, text: "Failed to connect to AI server." }
+              ? { ...m, id: `ai-${Date.now()}`, text: "Failed to connect. Check your .env keys." }
               : m
           )
         );
@@ -426,7 +463,7 @@ export default function ChatbotScreen() {
 
     const actualIndex = activeSession.messages.length - 1 - lastAiIndex;
     const prunedMessages = activeSession.messages.slice(0, actualIndex);
-
+    
     updateSessionMessages(activeSessionId, () => prunedMessages);
 
     const lastUserMsg = prunedMessages[prunedMessages.length - 1];
@@ -509,9 +546,9 @@ export default function ChatbotScreen() {
             theme={theme}
             onLongPress={() => handleEditMessage(item.id)}
             onCopy={() => {
-              // Clipboard.set([{ string: item.text }]);
-              // Clipboard.setString(item.text);
+              Clipboard.setString(item.text);
               Vibration.vibrate(10);
+              Alert.alert("Copied", "Message copied to clipboard");
             }}
             isLastAiMessage={item.id === lastAiMessageId}
             onRegenerate={handleRegenerate}
@@ -550,7 +587,7 @@ export default function ChatbotScreen() {
                 <Text style={{ color: theme.textMuted, fontSize: 16 }}>✕</Text>
               </Pressable>
             )}
-
+            
             <TextInput
               style={[styles.input, { color: theme.textPrimary }]}
               placeholder={editingMessageId ? "Edit your message..." : "Type your message..."}
@@ -562,7 +599,7 @@ export default function ChatbotScreen() {
               multiline
               maxLength={500}
             />
-
+            
             <Text style={[styles.charCount, { color: theme.textMuted }]}>{inputText.length}/500</Text>
 
             {isLoading ? (
@@ -687,7 +724,7 @@ const styles = StyleSheet.create({
   menuButton: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   menuIcon: { fontSize: 16, fontWeight: "700" },
   listContainer: { paddingHorizontal: 16, paddingTop: spacing.xxl + 40, paddingBottom: 100 },
-
+  
   // Message Bubbles
   messageWrapper: { marginBottom: spacing.md, maxWidth: "85%" },
   aiBubbleAlign: { alignSelf: "flex-start" },
@@ -740,7 +777,7 @@ const styles = StyleSheet.create({
   sessionCount: { fontSize: 12 },
   sessionActions: { flexDirection: "row", gap: spacing.lg },
   actionIcon: { padding: spacing.xs },
-
+  
   // Rename Modal Specifics
   renameInput: { width: "100%", borderWidth: 1, borderRadius: borderRadius.lg, padding: spacing.md, fontSize: 15, marginBottom: spacing.lg },
   modalActions: { flexDirection: "row", justifyContent: "flex-end", gap: spacing.md },
