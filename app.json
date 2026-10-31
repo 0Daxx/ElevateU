@@ -33,11 +33,11 @@
           "imageWidth": 76
         }
       ],
-      "@react-native-vector-icons/ionicons",
+      "expo-image",
       "expo-web-browser",
       "expo-font",
-      "expo-image",
-      "expo-status-bar"
+      "expo-status-bar",
+      "@react-native-vector-icons/ionicons"
     ],
     "experiments": {
       "typedRoutes": true,

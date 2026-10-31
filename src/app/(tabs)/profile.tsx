@@ -4,7 +4,7 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   useColorScheme,
 
   StatusBar,
@@ -26,12 +26,12 @@ export default function ProfileScreen() {
       {/* Screen Top Header */}
       <View style={styles.headerRow}>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Profile</Text>
-        <TouchableOpacity
+        <Pressable
           activeOpacity={0.7}
           style={[styles.settingsButton, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}
         >
           <Text style={[styles.settingsIcon, { color: theme.textPrimary }]}>⚙</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -82,9 +82,11 @@ export default function ProfileScreen() {
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
           <View style={styles.cardHeaderRow}>
             <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>Education</Text>
-            <View style={[styles.badge, { backgroundColor: theme.badgeBackground }]}>
+            <Pressable
+            onPress={()=>{}}
+            style={[styles.badge, { backgroundColor: theme.badgeBackground }]}>
               <Text style={[styles.badgeText, { color: theme.badgeText }]}>Editable</Text>
-            </View>
+            </Pressable>
           </View>
 
           <View style={styles.listContainer}>

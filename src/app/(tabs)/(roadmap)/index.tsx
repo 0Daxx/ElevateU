@@ -11,6 +11,7 @@ import {
   Linking,
 } from "react-native";
 import { colors, spacing, borderRadius } from "@/theme/theme";
+// import { colors, spacing, borderRadius } from "@/theme/theme";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link } from "expo-router";
