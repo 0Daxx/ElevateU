@@ -1,4 +1,5 @@
 import { Drawer } from "expo-router/drawer";
+import { Stack } from "expo-router/stack";
 import { useState } from "react";
 import { View, Text, Pressable, FlatList, StyleSheet } from "react-native";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
@@ -16,11 +17,11 @@ interface ChatSession {
 // We do this so we can safely use the useNavigation hook
 function DrawerToggleButton() {
     const navigation = useNavigation();
-    
+
     return (
-        <Pressable 
+        <Pressable
             // onPress={() => navigation.openDrawer()} 
-            onPress={() => navigation.openDrawer() } 
+            onPress={() => navigation.openDrawer()}
             style={{ marginLeft: 15, padding: 5 }}
         >
             {/* The 3 horizontal lines icon */}
@@ -30,12 +31,12 @@ function DrawerToggleButton() {
 }
 
 // 2. Your Custom Sidebar (from previous step)
-function CustomSidebar({ 
-    chatSessions, 
-    onNewChat 
-}: { 
-    chatSessions: ChatSession[], 
-    onNewChat: () => void 
+function CustomSidebar({
+    chatSessions,
+    onNewChat
+}: {
+    chatSessions: ChatSession[],
+    onNewChat: () => void
 }) {
     const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
 
@@ -49,9 +50,9 @@ function CustomSidebar({
                 data={chatSessions}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => {
-                    const isActive = sessionId === item.id; 
+                    const isActive = sessionId === item.id;
                     return (
-                        <Pressable 
+                        <Pressable
                             style={[styles.sessionItem, isActive && styles.activeSession]}
                             onPress={() => router.push(`/(tabs)/(chatbot)/chatbot?sessionId=${item.id}`)}
                         >
@@ -66,21 +67,23 @@ function CustomSidebar({
 
 export default function ChatLayout() {
     const [chatSessions, setChatSessions] = useState<ChatSession[]>([
-        { id: "1", title: "Session 1", messages: [{
-    id: "1",
-    sender: "AI",
-    text: "Hello Rahul. Share your goal and I will suggest the next steps.",
-  },
-  {
-    id: "2",
-    sender: "You",
-    text: "I want to become an AI engineer.",
-  },
-  {
-    id: "3",
-    sender: "AI",
-    text: "Start with Python, DSA, ML basics, then small projects and resume improvement.",
-  },] },
+        {
+            id: "1", title: "Session 1", messages: [{
+                id: "1",
+                sender: "AI",
+                text: "Hello Rahul. Share your goal and I will suggest the next steps.",
+            },
+            {
+                id: "2",
+                sender: "You",
+                text: "I want to become an AI engineer.",
+            },
+            {
+                id: "3",
+                sender: "AI",
+                text: "Start with Python, DSA, ML basics, then small projects and resume improvement.",
+            },]
+        },
         { id: "2", title: "Session 2", messages: [] },
         { id: "3", title: "Session 3", messages: [] },
         { id: "4", title: "Session 4", messages: [] }
@@ -93,39 +96,41 @@ export default function ChatLayout() {
             title: `Session ${chatSessions.length + 1}`,
             messages: []
         };
-        
+
         setChatSessions([newSession, ...chatSessions]);
         // Note the updated path to match your folder structure
         router.push(`/(tabs)/(chatbot)/chatbot?sessionId=${newId}`);
     };
 
     return (
-        <Drawer
-            drawerContent={(props) => (
-                <CustomSidebar 
-                    chatSessions={chatSessions} 
-                    onNewChat={handleNewChat} 
-                />
-            )}
-        >
-            <Drawer.Screen 
-                name="chatbot" 
-                options={{ 
-                    title: "Chat",
+        // <Stack
+        //     drawerContent={(props) => (
+        //         <CustomSidebar 
+        //             chatSessions={chatSessions} 
+        //             onNewChat={handleNewChat} 
+        //         />
+        //     )}
+        // >
+        <Stack screenOptions={{ headerShown: false }}>
+
+            <Stack.Screen
+                name="chatbot"
+                options={{
+                    // title: "Chat",
                     // 3. EXPLICITLY ADD THE HAMBURGER MENU HERE
-                    headerLeft: () => <DrawerToggleButton />,
+                    // headerLeft: () => <DrawerToggleButton />,
                     // Ensure the header is actually visible
-                    headerShown: true, 
-                }} 
+                    // headerShown: true,
+                }}
             />
-        </Drawer>
+        </Stack>
     );
 }
 
 const styles = StyleSheet.create({
     sidebarContainer: {
         flex: 1,
-        paddingTop: 50, 
+        paddingTop: 50,
         backgroundColor: '#fff',
     },
     newChatButton: {

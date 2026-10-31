@@ -4,25 +4,26 @@ import {
   Text,
   View,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   useColorScheme,
   StatusBar,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius } from "@/theme/theme" ;
-
+import { useNavigation } from 'expo-router';
 interface HomeScreenProps {
   navigation?: any;
 }
 
-export default function HomeScreen({ navigation }: HomeScreenProps) {
+export default function HomeScreen() {
+// export default function HomeScreen({ navigation }: HomeScreenProps) {
   const systemColorScheme = useColorScheme();
   const theme = systemColorScheme === 'light' ? colors.light : colors.dark;
-
+  const navigation = useNavigation();
   const navigateTo = (screenName: string) => {
     if (navigation) {
-      navigation.navigate(screenName);
+      // navigation.navigate(screenName);
     } else {
       console.log(`Navigating to: ${screenName}`);
     }
@@ -35,12 +36,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       {/* Header */}
       <View style={styles.headerRow}>
         <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>Home</Text>
-        <TouchableOpacity
-          activeOpacity={0.7}
+        <Pressable
+          // activeOpacity={0.7}
           style={[styles.menuButton, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}
         >
           <Text style={[styles.menuIcon, { color: theme.textPrimary }]}>≡</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -58,25 +59,27 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           </Text>
 
           <View style={styles.heroButtonRow}>
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <Pressable
               style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-              onPress={() => navigateTo('Assessment')}
+              onPress={() => navigation.navigate('assessment')  }
+              // onPress={() => navigateTo('Assessment')  }
             >
               <Text style={[styles.primaryButtonText, { color: theme.primaryButtonText }]}>
                 Take Assessment
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
-              activeOpacity={0.8}
+            <Pressable
+              // activeOpacity={0.8}
               style={[styles.secondaryButton, { backgroundColor: theme.badgeBackground, borderColor: theme.cardBorder }]}
-              onPress={() => navigateTo('Roadmaps')}
+              // onPress={() => navigateTo('Roadmaps')}
+              onPress={() => navigation.navigate('(roadmap)') }
+              // onPress={() => navigation.navigate('(tabs)/(roadmap)/index') }
             >
               <Text style={[styles.secondaryButtonText, { color: theme.textPrimary }]}>
                 Explore Roadmaps
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
@@ -221,9 +224,9 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               { label: 'Chatbot', screen: 'Chatbot' },
               { label: 'Profiles', screen: 'Profile' },
             ].map((action) => (
-              <TouchableOpacity
+              <Pressable
                 key={action.label}
-                activeOpacity={0.7}
+                // activeOpacity={0.7}
                 onPress={() => navigateTo(action.screen)}
                 style={[
                   styles.quickActionCard,
@@ -233,7 +236,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 <Text style={[styles.quickActionText, { color: theme.textSecondary }]}>
                   {action.label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>

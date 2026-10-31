@@ -42,7 +42,7 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
-        name="chatbot"
+        name="(chatbot)"
         options={{
           headerShown: false,
           tabBarIcon: () => <Ionicons name="chatbubbles" size={24} color="black" />,

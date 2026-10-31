@@ -122,11 +122,10 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
           {ROADMAPS_DATA.map((item) => (
             <Pressable
               key={item.id}
-              onPress={
-                () => {
-                  router.push(`/(tabs)/(roadmap)/${item.id}`);
-                }
-              }
+              onPress={() => {
+                router.push(`/(tabs)/(roadmap)/${item.id}`);
+                console.log(`Navigating to roadmap: ${item.id}`);
+              }}
               style={[
                 styles.gridCard,
                 {
@@ -149,28 +148,27 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
                 {item.description}
               </Text>
 
-              <View style={styles.cardFooter}>
+              <View style={styles.cardFooter} > 
                 <Text style={[styles.stepsText, { color: theme.textMuted }]}>
                   {item.stepsCount} steps
                 </Text>
-
-                
-                  {/* </Link> */}
-                  <View
+                {/* </Link> */}
+                <View
+                  style={[
+                    styles.openButton,
+                    { backgroundColor: theme.badgeBackground },
+                  ]}
+                >
+                  <Text
                     style={[
-                      styles.openButton,
-                      { backgroundColor: theme.badgeBackground },
+                      styles.openButtonText,
+                      { color: theme.textPrimary },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.openButtonText,
-                        { color: theme.textPrimary },
-                      ]}
-                    >
-                      Open
-                    </Text>
-                  </View>Link
+                    Open
+                  </Text>
+                </View>
+                Link
               </View>
             </Pressable>
           ))}

@@ -25,6 +25,10 @@ export const colors = {
     
     dashedBorder: '#334155',
     divider: '#1E293B',
+
+    progressBar: '#2DD4BF', // Light cyan / teal accent
+    progressBarBg: '#1E293B',
+    stepCircleBg: '#1E2638',
   },
   light: {
     background: '#F8FAFC',
@@ -49,6 +53,10 @@ export const colors = {
 
     dashedBorder: '#CBD5E1',
     divider: '#F1F5F9',
+
+    progressBar: '#0D9488',
+    progressBarBg: '#E2E8F0',
+    stepCircleBg: '#E2E8F0',
   },
 };
 
