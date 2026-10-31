@@ -1,11 +1,11 @@
-import {create} from "zustand";
+import { create } from "zustand";
 
 interface AuthState {
-    isAuth : boolean ;
-    setIsAuth : (isAuth : boolean) => void ;
+    isAuth: boolean;
+    setIsAuth: (isAuth: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>((set)=>({
-    isAuth : true,
-    setIsAuth : (isAuth : boolean) => set({isAuth})
+export const useAuthStore = create<AuthState>((set) => ({
+    isAuth: false,
+    setIsAuth: (isAuth: boolean) => set({ isAuth })
 }))
