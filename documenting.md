@@ -40,6 +40,19 @@ Date : 2026-08-04 20:12
 
 
 31 oct 
-- remove branch 
+- remove branch react-native-expo-dark-mode-ui-3579f 
+``` terminal
+ // delete branch locally
+git branch -d localBranchName
 
+// delete branch remotely
+git push origin --delete remoteBranchName 
+```
+- Upgrade Expo sdk version 
+` bun install expo@^58.0.0 ` 
+
+- Fix Error by undoing last 2 commits 
+` git reset --soft <commit_has> `
+
+- 
 
