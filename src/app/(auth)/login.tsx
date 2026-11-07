@@ -19,7 +19,8 @@ import { colors, spacing, borderRadius } from "@/theme/theme";
 // Assuming you have a router setup like Expo Router
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/context/authContext";
-
+import { makeRedirectUri } from "expo-auth-session";
+import { supabase } from "@/utils/supabase";
 export default function LoginScreen() {
   const { isAuth, setIsAuth } = useAuthStore();
   const systemColorScheme = useColorScheme();
@@ -31,55 +32,49 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // const redirectTo = makeRedirectUri("myapp://redirect");
+
   const handleLogin = async () => {
-    console.log("Login button pressed");
 
-    setIsLoading(true);
-    // validation for empty fields
-    if (!email || !password) {
-      Alert.alert("Missing Fields", "Please enter both email and password.");
-      return;
+    const isLoading = true; // Set loading state to true
+
+    try {
+      // email and password validation
+      if (!email || !password) {
+        Alert.alert("Missing Fields", "Please enter both email and password.");
+        return;
+      }
+      // validation for email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        Alert.alert("Invalid Email", "Please enter a valid email address.");
+        return;
+      }
+      // validation for password length
+      if (password.length < 6) {
+        Alert.alert("Weak Password", "Password must be at least 6 characters long.");
+        return;
+      }
+      // 
     }
-    // validation for email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
-      return;
+    catch (error) {
+      console.error("Error during login:", error);
+      Alert.alert("Login Error", "An unexpected error occurred. Please try again.");
     }
-    // validation for password length
-    if (password.length < 6) {
-      Alert.alert("Weak Password", "Password must be at least 6 characters long.");
-      return;
-    }
-    // validation for password complexity (at least one number and one special character)
-    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])/;
-    if (!passwordRegex.test(password)) {
-      Alert.alert(
-        "Weak Password",
-        "Password must contain at least one number and one special character."
-      );
-      return;
-    }
-
-
-    // if (isLoading) return; // Prevent multiple submissions
-    // TODO : add 3rd party authentication logic for google sign in 
-
-    setIsAuth(true); // Set authentication state to true
-    // if (isAuth) {
-    //   router.replace("/(tabs)/"); // Navigate to main app or dashboard
-    // } else {
-    //   Alert.alert("Authentication Failed", "Please check your credentials and try again.");
-    // }
-    // setIsLoading(false); // Reset loading state
-    // Simulate API Call
-    setTimeout(() => {
-
-      // setIsLoading(false);
+    finally {
       setIsLoading(false);
-      // Navigate to main app or dashboard
-      router.replace("/(tabs)/");
-    }, 1000); // Simulate a 1-second delay for the API call
+
+      setIsAuth(true); // Set authentication state to true
+
+      // Simulate API Call
+      setTimeout(() => {
+
+        // setIsLoading(false);
+        setIsLoading(false);
+        // Navigate to main app or dashboard
+        router.replace("/(tabs)/");
+      }, 1000); // Simulate a 1-second delay for the API call
+    }
   };
 
   return (
@@ -119,12 +114,14 @@ export default function LoginScreen() {
             </View>
 
             {/* Password Input */}
+
+
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: theme.textPrimary }]}>Password
 
               </Text>
 
-              {/* (6-20 characters, at least one number and one special character)  */}
+              {/* // {/* (6-20 characters, at least one number and one special character)   */}
               <View style={[styles.passwordContainer, { backgroundColor: theme.background, borderColor: theme.cardBorder }]}>
                 <TextInput
                   style={[styles.passwordInput, { color: theme.textPrimary }]}
@@ -152,7 +149,6 @@ export default function LoginScreen() {
             <Pressable
               style={[styles.button, { backgroundColor: isLoading ? theme.textMuted : theme.primary }]}
               onPress={() => {
-                // setIsLoading(true);
                 handleLogin();
               }}
               disabled={isLoading}

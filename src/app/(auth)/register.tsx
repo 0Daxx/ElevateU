@@ -36,6 +36,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 
 import { useAuthStore } from "@/context/authContext";
+import { supabase } from "@/utils/supabase";
 
 export default function RegisterScreen() {
   const { isAuth, setIsAuth } = useAuthStore();
@@ -46,57 +47,63 @@ export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [tosChecked, setTosChecked] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert("Missing Fields", "Please fill in all details.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert("Password Mismatch", "Passwords do not match.");
-      return;
-    }
-    if (!email || !password) {
-      Alert.alert("Missing Fields", "Please enter both email and password.");
-      return;
-    }
-    // validation for email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
-      return;
-    }
-    // validation for password length
-    if (password.length < 6) {
-      Alert.alert("Weak Password", "Password must be at least 6 characters long.");
-      return;
-    }
-    // validation for password complexity (at least one number and one special character)
-    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])/;
-    if (!passwordRegex.test(password)) {
-      Alert.alert(
-        "Weak Password",
-        "Password must contain at least one number and one special character."
-      );
-      return;
-    }
+    setIsLoading(true); // Set loading state to true
+    console.log("Register button pressed");
 
-    if (!tosChecked) {
-      Alert.alert("Terms Not Accepted", "Please accept the Terms of Service and Privacy Policy.");
-      return;
-    }
+    try {
+      if (!name || !email || !password) {
+        Alert.alert("Missing Fields", "Please fill in all details.");
+        return;
+      }
+      if (!email || !password) {
+        Alert.alert("Missing Fields", "Please enter both email and password.");
+        return;
+      }
+      // validation for email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        Alert.alert("Invalid Email", "Please enter a valid email address.");
+        return;
+      }
+      // validation for password length
+      if (password.length < 6) {
+        Alert.alert("Weak Password", "Password must be at least 6 characters long.");
+        return;
+      }
+      // validation for password complexity (at least one number and one special character)
+      const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])/;
+      if (!passwordRegex.test(password)) {
+        Alert.alert(
+          "Weak Password",
+          "Password must contain at least one number and one special character."
+        );
+        return;
+      }
 
-    setIsLoading(true);
-    // Simulate API Call
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert("Success", "Account created! Please login.", [
-        { text: "OK", onPress: () => router.replace("/login") }
-      ]);
-    }, 1500);
+      if (!tosChecked) {
+        Alert.alert("Terms Not Accepted", "Please accept the Terms of Service and Privacy Policy.");
+        return;   
+      }
+
+    }
+    catch (error) {
+      console.error("Error during registration:", error);
+      Alert.alert("Registration Error", "An unexpected error occurred. Please try again.");
+    }
+    finally {
+      setIsLoading(false); // Set loading state to false
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      })
+    }
   };
 
   return (
@@ -152,21 +159,32 @@ export default function RegisterScreen() {
               />
             </View>
 
-            {/* Password Input */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.textPrimary }]}>Password</Text>
-              <TextInput
-                style={[styles.input, { backgroundColor: theme.background, color: theme.textPrimary, borderColor: theme.cardBorder }]}
-                placeholder="••••••••"
-                placeholderTextColor={theme.textMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+              <Text style={[styles.label, { color: theme.textPrimary }]}>Password
+
+              </Text>
+
+              {/* // {/* (6-20 characters, at least one number and one special character)   */}
+              <View style={[styles.passwordContainer, { backgroundColor: theme.background, borderColor: theme.cardBorder }]}>
+                <TextInput
+                  style={[styles.passwordInput, { color: theme.textPrimary }]}
+                  placeholder="6-20 characters with at least one number and one special character"
+                  // placeholder="••••••••"
+                  placeholderTextColor={theme.textMuted}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+                <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Text style={[styles.toggleText, { color: theme.primary }]}>
+                    {showPassword ? "Hide" : "Show"}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
 
             {/* Confirm Password Input */}
-            <View style={styles.inputGroup}>
+            {/* <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: theme.textPrimary }]}>Confirm Password</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: theme.background, color: theme.textPrimary, borderColor: theme.cardBorder }]}
@@ -176,13 +194,13 @@ export default function RegisterScreen() {
                 onChangeText={setConfirmPassword}
                 secureTextEntry
               />
-            </View>
+            </View> */}
 
             {/* Terms Checkbox (Simulated) */}
             <View style={styles.termsContainer}>
-              <Pressable style={[styles.checkbox, { borderColor: theme.cardBorder }]} 
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              onPress={() => setTosChecked(!tosChecked)}
+              <Pressable style={[styles.checkbox, { borderColor: theme.cardBorder }]}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                onPress={() => setTosChecked(!tosChecked)}
               >
                 <Ionicons name={tosChecked ? "checkmark" : "square-outline"} size={16} color={theme.primary} />
               </Pressable>
@@ -264,5 +282,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonText: { fontSize: 16, fontWeight: "700" },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    height: 50,
+    paddingHorizontal: spacing.md,
+  },
+  passwordInput: { flex: 1, fontSize: 16, height: "100%" },
+  toggleText: { fontSize: 14, fontWeight: "600" },
+
 });
 // const styles = StyleSheet.create({});
