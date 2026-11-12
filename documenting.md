@@ -59,3 +59,12 @@ git push origin --delete remoteBranchName
 ` bun expo install expo-auth-session expo-crypto `
 ` bun expo install @react-native-async-storage/async-storage `  
 
+## 12 Nov 
+
+### Error 1 : 
+- Node.js v24.15.0 
+error: script "start" exited with code 7
+- Reason : 
+
+## 13 Nov 
+![git Error](git_error.png)
