@@ -10,20 +10,20 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from "@/theme/theme" ;
-import { useNavigation } from 'expo-router';
-interface HomeScreenProps {
-  navigation?: any;
-}
+import { colors, spacing, borderRadius } from "@/theme/theme";
+import { useRouter } from 'expo-router';
+// interface HomeScreenProps {
+//   navigation?: any;
+// }
 
-export default function HomeScreen() {
 // export default function HomeScreen({ navigation }: HomeScreenProps) {
+export default function HomeScreen() {
   const systemColorScheme = useColorScheme();
   const theme = systemColorScheme === 'light' ? colors.light : colors.dark;
-  const navigation = useNavigation();
+  const router = useRouter();
   const navigateTo = (screenName: string) => {
-    if (navigation) {
-      // navigation.navigate(screenName);
+    if (router) {
+      // router.navigate(screenName);
     } else {
       console.log(`Navigating to: ${screenName}`);
     }
@@ -45,7 +45,7 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        
+
         {/* Hero Greeting Card */}
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.cardBorder }]}>
           <Text style={[styles.categoryLabel, { color: theme.textSecondary }]}>
@@ -61,8 +61,8 @@ export default function HomeScreen() {
           <View style={styles.heroButtonRow}>
             <Pressable
               style={[styles.primaryButton, { backgroundColor: theme.primary }]}
-              onPress={() => navigation.navigate('assessment')  }
-              // onPress={() => navigateTo('Assessment')  }
+              onPress={() => router.navigate('/(tabs)/assessment')}
+            // onPress={() => navigateTo('Assessment')  }
             >
               <Text style={[styles.primaryButtonText, { color: theme.primaryButtonText }]}>
                 Take Assessment
@@ -73,8 +73,8 @@ export default function HomeScreen() {
               // activeOpacity={0.8}
               style={[styles.secondaryButton, { backgroundColor: theme.badgeBackground, borderColor: theme.cardBorder }]}
               // onPress={() => navigateTo('Roadmaps')}
-              onPress={() => navigation.navigate('(roadmap)') }
-              // onPress={() => navigation.navigate('(tabs)/(roadmap)/index') }
+              onPress={() => navigation.navigate('(roadmap)')}
+            // onPress={() => navigation.navigate('(tabs)/(roadmap)/index') }
             >
               <Text style={[styles.secondaryButtonText, { color: theme.textPrimary }]}>
                 Explore Roadmaps
