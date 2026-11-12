@@ -54,5 +54,8 @@ git push origin --delete remoteBranchName
 - Fix Error by undoing last 2 commits 
 ` git reset --soft <commit_has> `
 
-- 
+- add supabase
+
+` bun expo install expo-auth-session expo-crypto `
+` bun expo install @react-native-async-storage/async-storage `  
 
