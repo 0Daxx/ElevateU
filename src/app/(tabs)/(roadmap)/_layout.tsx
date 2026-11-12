@@ -6,7 +6,7 @@ export default function Layout() {
       title: "Roadmap",
       // headerShown: true,
     }} />
-    <Stack.Screen name="[path]" options={{
+    <Stack.Screen name="(path)/[path]" options={{
       title: "Path",
       // headerShown: true,
     }} />
