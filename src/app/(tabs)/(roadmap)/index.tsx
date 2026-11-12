@@ -106,7 +106,7 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
           <Text style={[styles.categoryLabel, { color: theme.textSecondary }]}>
             ALL ROADMAPS
           </Text>
-          <Text style={[styles.heroTitle, { color: theme.textPrimary }]}>
+          <Text style={[styles.heroTitle, { color: theme.textPrimary }]} >
             Choose a path to open its stack screen.
           </Text>
           <Text
@@ -148,8 +148,10 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
                 {item.description}
               </Text>
 
-              <View style={styles.cardFooter} > 
-                <Text style={[styles.stepsText, { color: theme.textMuted }]}>
+              <View style={styles.cardFooter} >
+                <Text
+                 style={[styles.stepsText, { color: theme.textMuted }]}
+                 >
                   {item.stepsCount} steps
                 </Text>
                 {/* </Link> */}
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xl,
     borderWidth: 1,
     padding: spacing.md,
-    justify: "space-between",
+    justifyContent: "space-between",
     minHeight: 180,
   },
   roadmapTitle: {
