@@ -37,7 +37,8 @@
       "expo-web-browser",
       "expo-font",
       "expo-status-bar",
-      "@react-native-vector-icons/ionicons"
+      "@react-native-vector-icons/ionicons",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
