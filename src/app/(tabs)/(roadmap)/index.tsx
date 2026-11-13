@@ -14,7 +14,7 @@ import { colors, spacing, borderRadius } from "@/theme/theme";
 // import { colors, spacing, borderRadius } from "@/theme/theme";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link } from "expo-router";
+
 
 // Mock Data for Roadmaps
 interface RoadmapItem {
@@ -150,11 +150,10 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
 
               <View style={styles.cardFooter} >
                 <Text
-                 style={[styles.stepsText, { color: theme.textMuted }]}
-                 >
+                  style={[styles.stepsText, { color: theme.textMuted }]}
+                >
                   {item.stepsCount} steps
                 </Text>
-                {/* </Link> */}
                 <View
                   style={[
                     styles.openButton,
@@ -164,13 +163,12 @@ export default function RoadmapsScreen({ navigation }: RoadmapsScreenProps) {
                   <Text
                     style={[
                       styles.openButtonText,
-                      { color: theme.textPrimary },
+                      { color: theme.textPrimary, fontWeight: "700" },
                     ]}
                   >
                     Open
                   </Text>
                 </View>
-                Link
               </View>
             </Pressable>
           ))}
