@@ -64,7 +64,12 @@ git push origin --delete remoteBranchName
 ### Error 1 : 
 - Node.js v24.15.0 
 error: script "start" exited with code 7
-- Reason : 
+- Reason : idk 
+
+- fix : temporarily fix is to just use `bunx expo start --tunnel` 
+
 
 ## 13 Nov 
 ![git Error](git_error.png)
+- git stash : 
+- 
